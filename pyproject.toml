@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gtfs-viewer-processing"
+name = "gtfs_builder"
 version = "0.6.0"
 description = ""
 authors = ["amauryval <amauryval@gmail.com>"]
