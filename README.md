@@ -1,8 +1,7 @@
-GTFS BUILDER
+gtfs-viewer-processing
 
-[![RunTest](https://github.com/amauryval/gtfs_builder/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/amauryval/gtfs_builder/actions/workflows/main.yml)
-[![codecov](https://codecov.io/gh/amauryval/gtfs_builder/branch/master/graph/badge.svg)](https://codecov.io/gh/amauryval/gtfs_builder)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![RunTest](https://github.com/my-ava-portfolio/gtfs-viewer-processing/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/amauryval/gtfs_builder/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/my-ava-portfolio/gtfs-viewer-processing/branch/master/graph/badge.svg)](https://codecov.io/gh/amauryval/gtfs_builder)
 
 
 A tool to compute all the intermediate stops (geometry and time range) between each trips from a GTFS in order to emulate their travel 
@@ -61,7 +60,7 @@ Copy paste the 'inputs_attrs.json' file into your data direction (ex: 'input_dat
 This file is used to map column types for each gtfs files
 
 
-## Run the process
+## Run the data building
 
 Let's go to compute your data
 
@@ -69,7 +68,7 @@ Let's go to compute your data
 python db_run.py
 ```
 
-You'll get 3 parquet files:
+You'll get 3 parquet files which can be use with TODO:
 
 * [study_area_name]_moving_stops.parq:
 
@@ -82,6 +81,3 @@ On going.... [TODO]
 * [study_area_name]_base_lines_data.parq
 
 On going.... [TODO]
-
-
-
