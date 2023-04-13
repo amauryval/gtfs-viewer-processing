@@ -1,4 +1,4 @@
-GTFS BUILDER
+gtfs-viewer-processing
 
 [![RunTest](https://github.com/my-ava-portfolio/gtfs-viewer-processing/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/amauryval/gtfs_builder/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/my-ava-portfolio/gtfs-viewer-processing/branch/master/graph/badge.svg)](https://codecov.io/gh/amauryval/gtfs_builder)
@@ -60,7 +60,7 @@ Copy paste the 'inputs_attrs.json' file into your data direction (ex: 'input_dat
 This file is used to map column types for each gtfs files
 
 
-## Run the process
+## Run the data building
 
 Let's go to compute your data
 
