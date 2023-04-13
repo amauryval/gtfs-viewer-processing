@@ -1,7 +1,7 @@
 gtfs-viewer-processing
 
 [![RunTest](https://github.com/my-ava-portfolio/gtfs-viewer-processing/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/amauryval/gtfs_builder/actions/workflows/main.yml)
-[![codecov](https://codecov.io/gh/my-ava-portfolio/gtfs-viewer-processing/branch/master/graph/badge.svg)](https://codecov.io/gh/amauryval/gtfs_builder)
+[![codecov](https://codecov.io/gh/my-ava-portfolio/gtfs-viewer-processing/branch/master/graph/badge.svg)](https://codecov.io/gh/my-ava-portfolio/gtfs-viewer-processing)
 
 
 A tool to compute all the intermediate stops (geometry and time range) between each trips from a GTFS in order to emulate their travel 
