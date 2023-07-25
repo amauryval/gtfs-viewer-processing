@@ -1,19 +1,19 @@
 import os
 from typing import Dict
-
+import pandas as pd
 from spatialpandas import io
 from spatialpandas import GeoDataFrame
 
 from gtfs_builder.app.config import settings
 
-
-def _get_data(area: str) -> GeoDataFrame:
-    return io.read_parquet(
-        os.path.join(os.getcwd(), settings.DATA_DIR, f"{area.lower()}_moving_stops.parq"),
-        columns=["start_date", "end_date", "x", "y", "geometry", "route_long_name", "route_type"]).astype({
+# TODO simplify the process to JSON
+def _get_data(area: str):
+    return pd.read_parquet(os.path.join(os.getcwd(), settings.DATA_DIR, f"{area.lower()}_moving_stops.parq"),
+                           columns=["shape_id", "start_date", "end_date", "x", "y", "route_long_name", "route_type"]
+        ).astype({
+            "shape_id": "string",
             "start_date": "uint32",
             "end_date": "uint32",
-            "geometry": "Point[float64]",
             "x": "float32",
             "y": "float32",
             "route_type": "uint8",
@@ -29,10 +29,10 @@ def input_data() -> Dict:
     }
 
 def to_json():
-    import pandas as pd
     for title, data in input_data().items():
         print(title)
         data = data[[
+            "shape_id",
             "start_date",
             "end_date",
             "x", "y",

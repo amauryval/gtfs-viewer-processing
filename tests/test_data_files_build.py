@@ -54,9 +54,9 @@ def test_data_processing_full_data_thresh_2(credentials):
                                                 'route_type', 'route_color', 'route_text_color'}
 
     moving_stops = sp_io.read_parquet(moving_stops_data_path)
-    assert moving_stops.shape == (407, 10)
-    assert set(moving_stops.columns.tolist()) == {'start_date', 'end_date', "geometry", 'stop_code', 'x', 'y',
-                                                  'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
+    assert moving_stops.shape == (407, 11)
+    assert set(moving_stops.columns.tolist()) == {"shape_id", 'start_date', 'end_date', "geometry", 'stop_code', 'x',
+                                                  'y', 'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
 
 
 def test_data_processing_full_data_calendar_dates(credentials):
@@ -84,9 +84,9 @@ def test_data_processing_full_data_calendar_dates(credentials):
                                                 'route_type', 'route_color', 'route_text_color'}
 
     moving_stops = sp_io.read_parquet(moving_stops_data_path)
-    assert moving_stops.shape == (407, 10)
-    assert set(moving_stops.columns.tolist()) == {'start_date', 'end_date', "geometry", 'stop_code', 'x', 'y',
-                                                  'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
+    assert moving_stops.shape == (407, 11)
+    assert set(moving_stops.columns.tolist()) == {"shape_id", 'start_date', 'end_date', "geometry", 'stop_code', 'x',
+                                                  'y', 'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
 
 
 def test_data_processing_with_shape_id_computed(credentials):
@@ -115,9 +115,9 @@ def test_data_processing_with_shape_id_computed(credentials):
                                                 'route_type', 'route_color', 'route_text_color'}
 
     moving_stops = sp_io.read_parquet(moving_stops_data_path)
-    assert moving_stops.shape == (735, 10)
-    assert set(moving_stops.columns.tolist()) == {'start_date', 'end_date', "geometry", 'stop_code', 'x', 'y',
-                                                  'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
+    assert moving_stops.shape == (735, 11)
+    assert set(moving_stops.columns.tolist()) == {"shape_id", 'start_date', 'end_date', "geometry", 'stop_code', 'x',
+                                                  'y', 'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
 
 
 def test_data_processing_full_data_treshold(credentials):
@@ -146,6 +146,6 @@ def test_data_processing_full_data_treshold(credentials):
                                                 'route_type', 'route_color', 'route_text_color'}
 
     moving_stops = sp_io.read_parquet(moving_stops_data_path)
-    assert moving_stops.shape == (256, 10)
-    assert set(moving_stops.columns.tolist()) == {'start_date', 'end_date', "geometry", 'stop_code', 'x', 'y',
-                                                  'stop_name', 'route_type', 'route_long_name', 'route_short_name'}
+    assert moving_stops.shape == (256, 11)
+    assert set(moving_stops.columns.tolist()) == {"shape_id", 'start_date', 'end_date', "geometry", 'stop_code', 'x',
+                                                  'y', 'stop_name', 'route_type', 'route_long_name', 'route_short_name'}

@@ -4,10 +4,10 @@
     "input_data_dir": "input_data/lyon",
     "transport_modes": ["metro", "tramway"],
     "date_mode": "calendar_dates",
-    "date": "20211220",
+    "date": "20220609",
     "build_shape_id": true,
     "interpolation_threshold": 800,
-    "multiprocess": true,
+    "multiprocess": false,
     "db_mode": "overwrite"
   },
   {

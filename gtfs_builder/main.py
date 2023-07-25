@@ -42,8 +42,6 @@ from psycopg2.extras import DateTimeRange
 from itertools import accumulate
 import operator
 
-from spatialpandas import GeoDataFrame
-
 
 class ShapeIdError(Exception):
     pass
@@ -61,7 +59,7 @@ class GtfsFormater(GeoSpatialLib):
     __MAIN_DB_SCHEMA = "gtfs_data"
     __PG_EXTENSIONS = ["btree_gist", "postgis"]
 
-    __COORDS_PRECISION = 3
+    __COORDS_PRECISION = 6
 
     __RAW_DATA_DIR = "../input_data"
 
@@ -85,6 +83,7 @@ class GtfsFormater(GeoSpatialLib):
         "stop_code",
         "x",
         "y",
+        "shape_id",
         "geometry",
         "stop_name",
         "route_type",
@@ -319,7 +318,7 @@ class GtfsFormater(GeoSpatialLib):
                 [self.compute_line, line, stops_on_day]
                 for line in lines_on_day.to_dict('records')
             ]
-            data_completed = method_processing_modes(processes, mode="processing")
+            data_completed = method_processing_modes(processes, mode=None)
         else:
             data_completed = [
                 self.compute_line(line, stops_on_day)
@@ -327,8 +326,8 @@ class GtfsFormater(GeoSpatialLib):
             ]
 
         self.logger.info(f"{len(data_completed)}")
-        data_completed = list(filter(lambda x: not isinstance(x, list), data_completed))
-        data_completed = pd.concat(data_completed)
+        data_completed = list(filter(lambda x: not isinstance(x, list) and not x.empty, data_completed))
+        data_completed = pd.concat(data_completed, ignore_index=True)
 
         if self._output_format == "db":
             self._prepare_db()
@@ -339,8 +338,8 @@ class GtfsFormater(GeoSpatialLib):
             self.dict_list_to_db(self._engine, dict_data, self.__MAIN_DB_SCHEMA, MovingPoints.__table__.name)
 
         else:
-            data_sp = GeoDataFrame(data_completed, geometry="geometry")
-            data_sp = data_sp[self.__MOVING_DATA_COLUMNS].sort_values("start_date")
+            # data_sp = GeoDataFrame(data_completed, geometry="geometry")
+            data_sp = data_completed[self.__MOVING_DATA_COLUMNS].sort_values("start_date")
 
             data_sp["start_date"] = [int(row.timestamp()) for row in data_sp["start_date"]]
             data_sp["end_date"] = [int(row.timestamp()) for row in data_sp["end_date"]]
@@ -350,12 +349,14 @@ class GtfsFormater(GeoSpatialLib):
                 "end_date": "float",
                 "x": "float",
                 "y": "float",
+                "shape_id": "category",
                 "stop_name": "category",
                 "stop_code": "category",
                 "route_type": "category",
                 "route_long_name": "category",
                 "route_short_name": "category",
             })
+            # TODO simplify the process to JSON without spatialpandas
 
             data_sp.to_parquet(f"{self._study_area_name}_{self.__MOVING_STOPS_OUTPUT_PARQUET_FILE}", compression='gzip')
 
@@ -371,6 +372,8 @@ class GtfsFormater(GeoSpatialLib):
             "route_color": lambda x: set(list(x)),
             "route_text_color": lambda x: set(list(x)),
         }).dropna()
+        # TODO simplify the process to JSON without spatialpandas
+
         stops_data = gpd.GeoDataFrame(stops)
         data_sp = GeoDataFrame(stops_data)
         data_sp.to_parquet(f"{self._study_area_name}_{self.__BASE_STOPS_OUTPUT_PARQUET_FILE}", compression='gzip')
