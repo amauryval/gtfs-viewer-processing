@@ -42,8 +42,6 @@ from psycopg2.extras import DateTimeRange
 from itertools import accumulate
 import operator
 
-from spatialpandas import GeoDataFrame
-
 
 class ShapeIdError(Exception):
     pass
@@ -61,9 +59,10 @@ class GtfsFormater(GeoSpatialLib):
     __MAIN_DB_SCHEMA = "gtfs_data"
     __PG_EXTENSIONS = ["btree_gist", "postgis"]
 
-    __COORDS_PRECISION = 3
+    __COORDS_PRECISION = 6
 
     __RAW_DATA_DIR = "../input_data"
+    __OUTPUT_DATA_DIR = "data"
 
     __SHAPES_FILE_CREATED_NAME = "shapes_computed.txt"
     __TRIPS_FILE_UPDATED_NAME = "trips_updated.txt"
@@ -85,6 +84,7 @@ class GtfsFormater(GeoSpatialLib):
         "stop_code",
         "x",
         "y",
+        "shape_id",
         "geometry",
         "stop_name",
         "route_type",
@@ -305,6 +305,25 @@ class GtfsFormater(GeoSpatialLib):
 
             return
 
+    @staticmethod
+    def moving_stops_to_json(moving_stops: gpd.GeoDataFrame, study_area: str) -> None:
+        data = moving_stops[[
+            "shape_id",
+            "start_date",
+            "end_date",
+            "x", "y",
+            "route_long_name",
+            "route_type"
+        ]]
+        data.reset_index(inplace=True)
+        # data = data.drop(['index'], axis=1)
+        routes_indexed = pd.DataFrame(data["route_long_name"].unique()).reset_index()
+        routes_indexed.columns = ['route_id', 'route_long_name']
+        data = data.merge(routes_indexed, how="left", on="route_long_name")
+
+        data.to_json(f"data/{study_area}_gtfsData.json", orient="records")
+        routes_indexed.to_json(f"data/{study_area}_routeGtfsData.json", orient="records")
+
     def compute_moving_geom(self, stops_on_day: gpd.GeoDataFrame, lines_on_day: gpd.GeoDataFrame,
                             date: datetime) -> None:
         stops_on_day["arrival_time"] = [self._compute_date(date, row) for row in stops_on_day["arrival_time"]]
@@ -319,7 +338,7 @@ class GtfsFormater(GeoSpatialLib):
                 [self.compute_line, line, stops_on_day]
                 for line in lines_on_day.to_dict('records')
             ]
-            data_completed = method_processing_modes(processes, mode="processing")
+            data_completed = method_processing_modes(processes, mode=None)
         else:
             data_completed = [
                 self.compute_line(line, stops_on_day)
@@ -327,8 +346,8 @@ class GtfsFormater(GeoSpatialLib):
             ]
 
         self.logger.info(f"{len(data_completed)}")
-        data_completed = list(filter(lambda x: not isinstance(x, list), data_completed))
-        data_completed = pd.concat(data_completed)
+        data_completed = list(filter(lambda x: not isinstance(x, list) and not x.empty, data_completed))
+        data_completed = pd.concat(data_completed, ignore_index=True)
 
         if self._output_format == "db":
             self._prepare_db()
@@ -339,17 +358,17 @@ class GtfsFormater(GeoSpatialLib):
             self.dict_list_to_db(self._engine, dict_data, self.__MAIN_DB_SCHEMA, MovingPoints.__table__.name)
 
         else:
-            data_sp = GeoDataFrame(data_completed, geometry="geometry")
-            data_sp = data_sp[self.__MOVING_DATA_COLUMNS].sort_values("start_date")
+            data = data_completed[self.__MOVING_DATA_COLUMNS].sort_values("start_date")
 
-            data_sp["start_date"] = [int(row.timestamp()) for row in data_sp["start_date"]]
-            data_sp["end_date"] = [int(row.timestamp()) for row in data_sp["end_date"]]
+            data["start_date"] = [int(row.timestamp()) for row in data["start_date"]]
+            data["end_date"] = [int(row.timestamp()) for row in data["end_date"]]
 
-            data_sp = data_sp.astype({
-                "start_date": "float",
-                "end_date": "float",
+            data = data.astype({
+                "start_date": "int64",
+                "end_date": "int64",
                 "x": "float",
                 "y": "float",
+                "shape_id": "category",
                 "stop_name": "category",
                 "stop_code": "category",
                 "route_type": "category",
@@ -357,7 +376,11 @@ class GtfsFormater(GeoSpatialLib):
                 "route_short_name": "category",
             })
 
-            data_sp.to_parquet(f"{self._study_area_name}_{self.__MOVING_STOPS_OUTPUT_PARQUET_FILE}", compression='gzip')
+            data.to_parquet(
+                os.path.join(self.__OUTPUT_DATA_DIR,
+                             f"{self._study_area_name}_{self.__MOVING_STOPS_OUTPUT_PARQUET_FILE}"),
+                compression='gzip')
+            self.moving_stops_to_json(data, self._study_area_name)
 
     def compute_fixed_geom(self, stops_data: gpd.GeoDataFrame, lines_data: gpd.GeoDataFrame) -> None:
         stops_data_copy = stops_data.copy(deep=True)
@@ -371,9 +394,13 @@ class GtfsFormater(GeoSpatialLib):
             "route_color": lambda x: set(list(x)),
             "route_text_color": lambda x: set(list(x)),
         }).dropna()
+        # TODO simplify the process to JSON without spatialpandas
+
         stops_data = gpd.GeoDataFrame(stops)
-        data_sp = GeoDataFrame(stops_data)
-        data_sp.to_parquet(f"{self._study_area_name}_{self.__BASE_STOPS_OUTPUT_PARQUET_FILE}", compression='gzip')
+        stops_data.to_parquet(
+            os.path.join(self.__OUTPUT_DATA_DIR,
+            f"{self._study_area_name}_{self.__BASE_STOPS_OUTPUT_PARQUET_FILE}"),
+            compression='gzip')
 
         # TODO improve it....
         lines = stops_data_copy[
@@ -392,8 +419,10 @@ class GtfsFormater(GeoSpatialLib):
             "route_text_color": lambda x: set(list(x)),
         })
         lines_data = gpd.GeoDataFrame(lines)
-        data_sp = GeoDataFrame(lines_data)
-        data_sp.to_parquet(f"{self._study_area_name}_{self.__BASE_LINES_OUTPUT_PARQUET_FILE}", compression='gzip')
+        lines_data.to_parquet(
+            os.path.join(self.__OUTPUT_DATA_DIR,
+            f"{self._study_area_name}_{self.__BASE_LINES_OUTPUT_PARQUET_FILE}"),
+            compression='gzip')
 
     def compute_line(self, line: Dict, stops_on_day: gpd.GeoDataFrame) -> pd.DataFrame | list:
         try:

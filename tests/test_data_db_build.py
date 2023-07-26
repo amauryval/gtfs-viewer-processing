@@ -31,7 +31,8 @@ def test_data_processing_full_data_thresh_overwrite_table(credentials, session_d
     query = MovingPoints.get_bounds_by_area("fake")
     assert query.count() == 1
     assert len(MovingPoints.get_bounds_by_area("fake").first()) == 3
-    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]).bounds == (-122.482, 36.881, -116.752, 37.658)
+    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]
+                 ).bounds == (-122.48161, 36.88108, -116.751677, 37.657832)
     assert MovingPoints.get_bounds_by_area("fake").first()[1] == datetime.datetime(2007, 1, 1, 6, 0)
     assert MovingPoints.get_bounds_by_area("fake").first()[2] == datetime.datetime(2007, 1, 1, 12, 15)
 
@@ -59,7 +60,8 @@ def test_data_processing_full_data_calendar_dates(credentials, session_db):
     query = MovingPoints.get_bounds_by_area("fake")
     assert query.count() == 1
     assert len(MovingPoints.get_bounds_by_area("fake").first()) == 3
-    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]).bounds == (-122.482, 36.881, -116.752, 37.658)
+    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]
+                 ).bounds == (-122.48161, 36.88108, -116.751677, 37.657832)
     assert MovingPoints.get_bounds_by_area("fake").first()[1] == datetime.datetime(2007, 6, 4, 6, 0)
     assert MovingPoints.get_bounds_by_area("fake").first()[2] == datetime.datetime(2007, 6, 4, 12, 15)
 
@@ -87,7 +89,8 @@ def test_data_processing_with_shape_id_computed(credentials, session_db):
     query = MovingPoints.get_bounds_by_area("fake")
     assert query.count() == 1
     assert len(MovingPoints.get_bounds_by_area("fake").first()) == 3
-    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]).bounds == (-117.132, 36.427, -116.752, 36.916)
+    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]
+                 ).bounds == (-117.132068, 36.426871, -116.751677, 36.915682)
     assert MovingPoints.get_bounds_by_area("fake").first()[1] == datetime.datetime(2007, 1, 1, 6, 0)
     assert MovingPoints.get_bounds_by_area("fake").first()[2] == datetime.datetime(2007, 1, 1, 12, 15)
 
@@ -116,6 +119,7 @@ def test_data_processing_full_data_threshold(credentials, session_db):
     query = MovingPoints.get_bounds_by_area("fake")
     assert query.count() == 1
     assert len(MovingPoints.get_bounds_by_area("fake").first()) == 3
-    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]).bounds == (-122.482, 36.881, -116.752, 37.657)
+    assert loads(MovingPoints.get_bounds_by_area("fake").first()[0]
+                 ).bounds == (-122.48161, 36.88108, -116.751677, 37.65698)
     assert MovingPoints.get_bounds_by_area("fake").first()[1] == datetime.datetime(2007, 1, 1, 6, 0)
     assert MovingPoints.get_bounds_by_area("fake").first()[2] == datetime.datetime(2007, 1, 1, 16, 0)
