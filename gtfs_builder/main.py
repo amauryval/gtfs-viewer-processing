@@ -358,15 +358,14 @@ class GtfsFormater(GeoSpatialLib):
             self.dict_list_to_db(self._engine, dict_data, self.__MAIN_DB_SCHEMA, MovingPoints.__table__.name)
 
         else:
-            # data_sp = GeoDataFrame(data_completed, geometry="geometry")
-            data_sp = data_completed[self.__MOVING_DATA_COLUMNS].sort_values("start_date")
+            data = data_completed[self.__MOVING_DATA_COLUMNS].sort_values("start_date")
 
-            data_sp["start_date"] = [int(row.timestamp()) for row in data_sp["start_date"]]
-            data_sp["end_date"] = [int(row.timestamp()) for row in data_sp["end_date"]]
+            data["start_date"] = [int(row.timestamp()) for row in data["start_date"]]
+            data["end_date"] = [int(row.timestamp()) for row in data["end_date"]]
 
-            data_sp = data_sp.astype({
-                "start_date": "float",
-                "end_date": "float",
+            data = data.astype({
+                "start_date": "int64",
+                "end_date": "int64",
                 "x": "float",
                 "y": "float",
                 "shape_id": "category",
@@ -376,13 +375,12 @@ class GtfsFormater(GeoSpatialLib):
                 "route_long_name": "category",
                 "route_short_name": "category",
             })
-            # TODO simplify the process to JSON without spatialpandas
 
-            data_sp.to_parquet(
+            data.to_parquet(
                 os.path.join(self.__OUTPUT_DATA_DIR,
                              f"{self._study_area_name}_{self.__MOVING_STOPS_OUTPUT_PARQUET_FILE}"),
                 compression='gzip')
-            self.moving_stops_to_json(data_sp, self._study_area_name)
+            self.moving_stops_to_json(data, self._study_area_name)
 
     def compute_fixed_geom(self, stops_data: gpd.GeoDataFrame, lines_data: gpd.GeoDataFrame) -> None:
         stops_data_copy = stops_data.copy(deep=True)
