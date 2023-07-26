@@ -62,6 +62,7 @@ class GtfsFormater(GeoSpatialLib):
     __COORDS_PRECISION = 6
 
     __RAW_DATA_DIR = "../input_data"
+    __OUTPUT_DATA_DIR = "data"
 
     __SHAPES_FILE_CREATED_NAME = "shapes_computed.txt"
     __TRIPS_FILE_UPDATED_NAME = "trips_updated.txt"
@@ -304,6 +305,25 @@ class GtfsFormater(GeoSpatialLib):
 
             return
 
+    @staticmethod
+    def moving_stops_to_json(moving_stops: gpd.GeoDataFrame, study_area: str) -> None:
+        data = moving_stops[[
+            "shape_id",
+            "start_date",
+            "end_date",
+            "x", "y",
+            "route_long_name",
+            "route_type"
+        ]]
+        data.reset_index(inplace=True)
+        # data = data.drop(['index'], axis=1)
+        routes_indexed = pd.DataFrame(data["route_long_name"].unique()).reset_index()
+        routes_indexed.columns = ['route_id', 'route_long_name']
+        data = data.merge(routes_indexed, how="left", on="route_long_name")
+
+        data.to_json(f"data/{study_area}_gtfsData.json", orient="records")
+        routes_indexed.to_json(f"data/{study_area}_routeGtfsData.json", orient="records")
+
     def compute_moving_geom(self, stops_on_day: gpd.GeoDataFrame, lines_on_day: gpd.GeoDataFrame,
                             date: datetime) -> None:
         stops_on_day["arrival_time"] = [self._compute_date(date, row) for row in stops_on_day["arrival_time"]]
@@ -358,7 +378,11 @@ class GtfsFormater(GeoSpatialLib):
             })
             # TODO simplify the process to JSON without spatialpandas
 
-            data_sp.to_parquet(f"{self._study_area_name}_{self.__MOVING_STOPS_OUTPUT_PARQUET_FILE}", compression='gzip')
+            data_sp.to_parquet(
+                os.path.join(self.__OUTPUT_DATA_DIR,
+                             f"{self._study_area_name}_{self.__MOVING_STOPS_OUTPUT_PARQUET_FILE}"),
+                compression='gzip')
+            self.moving_stops_to_json(data_sp, self._study_area_name)
 
     def compute_fixed_geom(self, stops_data: gpd.GeoDataFrame, lines_data: gpd.GeoDataFrame) -> None:
         stops_data_copy = stops_data.copy(deep=True)
@@ -375,7 +399,10 @@ class GtfsFormater(GeoSpatialLib):
         # TODO simplify the process to JSON without spatialpandas
 
         stops_data = gpd.GeoDataFrame(stops)
-        stops_data.to_parquet(f"{self._study_area_name}_{self.__BASE_STOPS_OUTPUT_PARQUET_FILE}", compression='gzip')
+        stops_data.to_parquet(
+            os.path.join(self.__OUTPUT_DATA_DIR,
+            f"{self._study_area_name}_{self.__BASE_STOPS_OUTPUT_PARQUET_FILE}"),
+            compression='gzip')
 
         # TODO improve it....
         lines = stops_data_copy[
@@ -394,7 +421,10 @@ class GtfsFormater(GeoSpatialLib):
             "route_text_color": lambda x: set(list(x)),
         })
         lines_data = gpd.GeoDataFrame(lines)
-        lines_data.to_parquet(f"{self._study_area_name}_{self.__BASE_LINES_OUTPUT_PARQUET_FILE}", compression='gzip')
+        lines_data.to_parquet(
+            os.path.join(self.__OUTPUT_DATA_DIR,
+            f"{self._study_area_name}_{self.__BASE_LINES_OUTPUT_PARQUET_FILE}"),
+            compression='gzip')
 
     def compute_line(self, line: Dict, stops_on_day: gpd.GeoDataFrame) -> pd.DataFrame | list:
         try:
